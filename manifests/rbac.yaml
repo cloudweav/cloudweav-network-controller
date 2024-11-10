@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/name: cloudweav-network-controller
+    app.kubernetes.io/component: network
+    app.kubernetes.io/version: 0.2.0
+  name: cloudweav-network-controller
+  namespace: cloudweav-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cloudweav-network-controller
+rules:
+  - apiGroups: [ "apiextensions.k8s.io" ]
+    resources: [ "customresourcedefinitions" ]
+    verbs: [ "*" ]
+  - apiGroups: [ "network.cloudweavhci.io" ]
+    resources: [ "clusternetworks", "nodenetworks" ]
+    verbs: [ "*" ]
+  - apiGroups: [ "k8s.cni.cncf.io" ]
+    resources: [ "network-attachment-definitions" ]
+    verbs: [ "get", "watch", "list", "update" ]
+  - apiGroups: [ "" ]
+    resources: [ "nodes" ]
+    verbs: [ "get", "watch", "list", "update" ]
+  - apiGroups: [ "" ]
+    resources: [ "configmaps", "events" ]
+    verbs: [ "get", "watch", "list", "update", "create" ]
+  - apiGroups: [ "" ]
+    resources: [ "namespaces" ]
+    verbs: [ "get", "watch", "list" ]
+  - apiGroups: [ "apps" ]
+    resources: [ "daemonsets" ]
+    verbs: [ "watch", "list", "update" ]
+  - apiGroups: [ "batch" ]
+    resources: [ "jobs" ]
+    verbs: [ "*" ]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/name: cloudweav-network-controller
+    app.kubernetes.io/component: network
+    app.kubernetes.io/version: 0.2.0
+  name: cloudweav-network-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cloudweav-network-controller
+subjects:
+  - kind: ServiceAccount
+    name: cloudweav-network-controller
+    namespace: cloudweav-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cloudweav-network-helper
+  namespace: cloudweav-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cloudweav-network-helper
+rules:
+  - apiGroups: [ "k8s.cni.cncf.io" ]
+    resources: [ "network-attachment-definitions" ]
+    verbs: [ "get", "update" ]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cloudweav-network-helper
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cloudweav-network-helper
+subjects:
+  - kind: ServiceAccount
+    name: cloudweav-network-helper
+    namespace: cloudweav-system
